@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:facebook_audience_network/facebook_audience_network.dart';
 import 'package:flutter/material.dart';
 
+import 'ads-facebook.dart';
+
 void main() {
   runApp(const MyApp());
 }
@@ -40,6 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
     width: 0.0,
     height: 0.0,
   );
+  bool _isBottomBannerAdLoaded = true;
 
   @override
   void initState() {
@@ -53,32 +56,32 @@ class _MyHomePageState extends State<MyHomePage> {
       iOSAdvertiserTrackingEnabled: true,
     );
 
-    // _loadInterstitialAd();
+    _loadInterstitialAd();
     // _loadRewardedVideoAd();
   }
 
-  // void _loadInterstitialAd() {
-  //   FacebookInterstitialAd.loadInterstitialAd(
-  //     //this is your placement id how it create we will show in end of video
-  //     placementId: Platform.isAndroid
-  //         ? "876616926981816_876617470315095"
-  //         : "ios placement id",
-  //     //this is listerner
-  //     listener: (result, value) {
-  //       print(">> FAN > Interstitial Ad: $result --> $value");
-  //       if (result == InterstitialAdResult.LOADED)
-  //         _isInterstitialAdLoaded = true;
+  void _loadInterstitialAd() {
+    FacebookInterstitialAd.loadInterstitialAd(
+      placementId: AdHelper.interstitialAds,
+      listener: (result, value) {
+        print(">> FAN > Interstitial Ad: $result --> $value");
+        if (result == InterstitialAdResult.LOADED)
+          _isInterstitialAdLoaded = true;
+        if (result == InterstitialAdResult.DISMISSED &&
+            value["invalidated"] == true) {
+          _isInterstitialAdLoaded = false;
+          _loadInterstitialAd();
+        }
+      },
+    );
+  }
 
-  //       /// Once an Interstitial Ad has been dismissed and becomes invalidated,
-  //       /// load a fresh Ad by calling this function.
-  //       if (result == InterstitialAdResult.DISMISSED &&
-  //           value["invalidated"] == true) {
-  //         _isInterstitialAdLoaded = false;
-  //         _loadInterstitialAd();
-  //       }
-  //     },
-  //   );
-  // }
+  _showInterstitialAd() {
+    if (_isInterstitialAdLoaded == true)
+      FacebookInterstitialAd.showInterstitialAd();
+    else
+      print("Interstial Ad not yet loaded!");
+  }
 
   // void _loadRewardedVideoAd() {
   //   FacebookRewardedVideoAd.loadRewardedVideoAd(
@@ -104,67 +107,46 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
+      bottomNavigationBar: _isBottomBannerAdLoaded
+          ? FacebookBannerAd(
+              placementId: AdHelper.bannerAds,
+              bannerSize: BannerSize.STANDARD,
+              listener: (result, value) {
+                print("Banner Ad: $result -->  $value");
+              },
+            )
+          : null,
       body: Center(
         child: Column(
           children: [
             Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  TextButton(onPressed: () {}, child: const Text('int')),
-                  TextButton(onPressed: () {}, child: const Text('rew')),
-                  TextButton(onPressed: () {}, child: const Text('native')),
-                  TextButton(
-                      onPressed: () {}, child: const Text('nativebanner')),
-                  TextButton(onPressed: () {}, child: const Text('banner')),
-                ],
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    //nativebannerads
+                    _nativeBannerAd(),
+                    TextButton(
+                        onPressed: () {
+                          _showInterstitialAd();
+                        },
+                        child: const Text('int')),
+                    TextButton(onPressed: () {}, child: const Text('rew')),
+                    TextButton(onPressed: () {}, child: const Text('native')),
+                    TextButton(
+                        onPressed: () {}, child: const Text('nativebanner')),
+                  ],
+                ),
               ),
             ),
             Expanded(
-              child: FacebookBannerAd(
-                // placementId: "YOUR_PLACEMENT_ID",
-                placementId:
-                    "IMG_16_9_APP_INSTALL#2312433698835503_2964944860251047", //testid
-                //size of banner ad
-                bannerSize: BannerSize.STANDARD,
-                listener: (result, value) {
-                  print("Banner Ad: $result -->  $value");
-                },
-              ),
+              //nativeads
+              child: _nativeAd(),
             )
           ],
         ),
       ),
     );
-  }
-
-  // _showInterstitialAd() {
-  //   if (_isInterstitialAdLoaded == true)
-  //     //we loaded at initstate we just show it
-  //     FacebookInterstitialAd.showInterstitialAd();
-  //   else
-  //     print("Interstial Ad not yet loaded!");
-  // }
-
-  // _showRewardedAd() {
-  //   if (_isRewardedAdLoaded == true)
-  //     FacebookRewardedVideoAd.showRewardedVideoAd();
-  //   else
-  //     print("Rewarded Ad not yet loaded!");
-  // }
-
-  _showBannerAd() {
-    setState(() {
-      _currentAd = FacebookBannerAd(
-        // placementId: "YOUR_PLACEMENT_ID",
-        placementId: "876616926981816_876617423648433", //testid
-        //size of banner ad
-        bannerSize: BannerSize.STANDARD,
-        listener: (result, value) {
-          print("Banner Ad: $result -->  $value");
-        },
-      );
-    });
   }
 
   // _showNativeBannerAd() {
@@ -173,25 +155,23 @@ class _MyHomePageState extends State<MyHomePage> {
   //   });
   // }
 
-  // Widget _nativeBannerAd() {
-  //   return FacebookNativeAd(
-  //     // placementId: "YOUR_PLACEMENT_ID",
-  //     //just use type a bannertype
-  //     placementId: "876616926981816_876617780315064",
-  //     adType: NativeAdType.NATIVE_BANNER_AD,
-  //     bannerAdSize: NativeBannerAdSize.HEIGHT_100,
-  //     width: double.infinity,
-  //     backgroundColor: Colors.blue,
-  //     titleColor: Colors.white,
-  //     descriptionColor: Colors.white,
-  //     buttonColor: Colors.deepPurple,
-  //     buttonTitleColor: Colors.white,
-  //     buttonBorderColor: Colors.white,
-  //     listener: (result, value) {
-  //       print("Native Banner Ad: $result --> $value");
-  //     },
-  //   );
-  // }
+  Widget _nativeBannerAd() {
+    return FacebookNativeAd(
+      placementId: AdHelper.nativebannerAds,
+      adType: NativeAdType.NATIVE_BANNER_AD,
+      bannerAdSize: NativeBannerAdSize.HEIGHT_100,
+      width: double.infinity,
+      backgroundColor: Colors.blue,
+      titleColor: Colors.white,
+      descriptionColor: Colors.white,
+      buttonColor: Colors.deepPurple,
+      buttonTitleColor: Colors.white,
+      buttonBorderColor: Colors.white,
+      listener: (result, value) {
+        print("Native Banner Ad: $result --> $value");
+      },
+    );
+  }
 
   // _showNativeAd() {
   //   setState(() {
@@ -199,23 +179,23 @@ class _MyHomePageState extends State<MyHomePage> {
   //   });
   // }
 
-  // Widget _nativeAd() {
-  //   return FacebookNativeAd(
-  //     placementId: "876616926981816_876617780315064",
-  //     adType: NativeAdType.NATIVE_AD_VERTICAL,
-  //     width: double.infinity,
-  //     height: 300,
-  //     backgroundColor: Colors.red,
-  //     titleColor: Colors.black,
-  //     descriptionColor: Colors.black,
-  //     buttonColor: Colors.blue,
-  //     buttonTitleColor: Colors.black,
-  //     buttonBorderColor: Colors.black,
-  //     listener: (result, value) {
-  //       print("Native Ad: $result --> $value");
-  //     },
-  //     keepExpandedWhileLoading: true,
-  //     expandAnimationDuraion: 1000,
-  //   );
-  // }
+  Widget _nativeAd() {
+    return FacebookNativeAd(
+      placementId: AdHelper.nativeAds,
+      adType: NativeAdType.NATIVE_AD_VERTICAL,
+      width: double.infinity,
+      height: 300,
+      backgroundColor: Colors.deepOrange,
+      titleColor: Colors.black,
+      descriptionColor: Colors.black,
+      buttonColor: Colors.blue,
+      buttonTitleColor: Colors.black,
+      buttonBorderColor: Colors.black,
+      listener: (result, value) {
+        print("Native Ad: $result --> $value");
+      },
+      keepExpandedWhileLoading: true,
+      expandAnimationDuraion: 1000,
+    );
+  }
 }
