@@ -25,6 +25,14 @@ class AdHelper {
     }
   }
 
+  static String get rewardAds {
+    if (Platform.isAndroid) {
+      return "IMG_16_9_APP_INSTALL#2312433698835503_2650502525028617";
+    } else {
+      throw new UnsupportedError("Unsupported platform");
+    }
+  }
+
   static String get interstitialAds {
     if (Platform.isAndroid) {
       return "IMG_16_9_APP_INSTALL#2312433698835503_2650502525028617";
