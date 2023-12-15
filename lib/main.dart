@@ -116,12 +116,6 @@ class _MyHomePageState extends State<MyHomePage> {
       adType: NativeAdType.NATIVE_BANNER_AD,
       bannerAdSize: NativeBannerAdSize.HEIGHT_100,
       width: double.infinity,
-      backgroundColor: Colors.blue,
-      titleColor: Colors.white,
-      descriptionColor: Colors.white,
-      buttonColor: Colors.deepPurple,
-      buttonTitleColor: Colors.white,
-      buttonBorderColor: Colors.white,
       listener: (result, value) {
         print("Native Banner Ad: $result --> $value");
       },
@@ -140,12 +134,6 @@ class _MyHomePageState extends State<MyHomePage> {
       adType: NativeAdType.NATIVE_AD_VERTICAL,
       width: double.infinity,
       height: 300,
-      backgroundColor: Colors.deepOrange,
-      titleColor: Colors.black,
-      descriptionColor: Colors.black,
-      buttonColor: Colors.blue,
-      buttonTitleColor: Colors.black,
-      buttonBorderColor: Colors.black,
       listener: (result, value) {
         print("Native Ad: $result --> $value");
       },
@@ -177,7 +165,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    //nativebannerads
+                    //---------native small --------------nativebannerads
                     _nativeBannerAd(),
                     TextButton(
                         onPressed: () {
@@ -189,19 +177,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           _showRewardedAd();
                         },
                         child: const Text('rew')),
-                    TextButton(
-                        onPressed: () {
-                          _showNativeAd();
-                        },
-                        child: const Text('native')),
-                    TextButton(
-                        onPressed: () {}, child: const Text('nativebanner')),
                   ],
                 ),
               ),
             ),
             Expanded(
-              //nativeads
+              //---------native meduim ----------------nativeads
               child: _nativeAd(),
             )
           ],
